@@ -2,6 +2,6 @@
 /.idea/
 /MultinetPy/__pycache__/
 MultinetPy/multinetx/__pycache__/__init__.cpython-313.pyc
-/.build/
-/.dist/
-/.Multinetpy.egg-info/
+/build/
+/dist/
+/Multinetpy.egg-info/
