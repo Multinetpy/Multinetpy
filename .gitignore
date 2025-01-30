@@ -5,3 +5,8 @@ MultinetPy/multinetx/__pycache__/__init__.cpython-313.pyc
 /.build/
 /.dist/
 /.Multinetpy.egg-info/
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
+.idea/Multinetpy.iml
+.idea/vcs.xml
+.idea/workspace.xml
