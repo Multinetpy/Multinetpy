@@ -27,7 +27,7 @@ class Import_Graph:
         file = open(edges_file)
         for line in file:
             edge = line.split(" ")
-            edges.append((int(edge[0]), (int(edge[1]), int(edge[2]), {"weight": int(edge[3][:-1])})))# after removing any trailing characters from the original string.
+            edges.append((int(edge[0]), (int(edge[1]), int(edge[2]), {"weight": float(edge[3][:-1])})))# after removing any trailing characters from the original string.
 # If layers is not provided (though the condition len(layers) < 0 will always be false), creates a unique set of layer IDs from the edges and converts it to a list
 
         if len(layers) < 0:
