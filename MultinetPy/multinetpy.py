@@ -58,16 +58,6 @@ class MultiNetPy(multinetx.MultilayerGraph):
         table.scale(1.2, 1.2)
         ax.axis('off')
         plt.show()
-
-    # All the centralities in networkX
-    def Centralities(self, centrality_type):
-        Centrality = {}
-        for layer_graph in self.list_of_layers:
-            try:
-                Centrality[layer_graph] = centrality_type(layer_graph)
-            except Exception as e:
-                print(f"Error calculating {centrality_type} centrality for layer {layer_graph}: {e}")
-        return Centrality 
     
     def aggregated_centralityTest(self, centrality_type):
         # Calculate betweenness centrality for each layer
@@ -105,101 +95,154 @@ class MultiNetPy(multinetx.MultilayerGraph):
         ax.axis('off')
         plt.show()
 
-    def Closeness_centrality(self):
-        ClosenessCentrality = {}
-        for layer_graph in self.list_of_layers:
-            try:
-                ClosenessCentrality[layer_graph] = nx.closeness_centrality(layer_graph)
-            except Exception as e:
-                print(f"Error calculating closeness centrality for layer {layer_graph}: {e}")
-        return ClosenessCentrality
+    # def Closeness_centrality(self):
+    #     ClosenessCentrality = {}
+    #     for layer_graph in self.list_of_layers:
+    #         try:
+    #             ClosenessCentrality[layer_graph] = nx.closeness_centrality(layer_graph)
+    #         except Exception as e:
+    #             print(f"Error calculating closeness centrality for layer {layer_graph}: {e}")
+    #     return ClosenessCentrality
     
-    def aggregated_CC(self):
-            # Calculate betweenness centrality for each layer
-            C_centralities = self.Closeness_centrality()
-            aggregated_centrality = {}
-            # Initialize number of layers
-            num_layers = len(self.list_of_layers)
+    # def aggregated_CC(self):
+    #         # Calculate betweenness centrality for each layer
+    #         C_centralities = self.Closeness_centrality()
+    #         aggregated_centrality = {}
+    #         # Initialize number of layers
+    #         num_layers = len(self.list_of_layers)
             
-            # Iterate over nodes in each layer and aggregate betweenness centrality
-            for layer_graph, centrality_dict in C_centralities.items():
-                for node, centrality_value in centrality_dict.items():
-                    if node not in aggregated_centrality:
-                        aggregated_centrality[node] = 1 * centrality_value
+    #         # Iterate over nodes in each layer and aggregate betweenness centrality
+    #         for layer_graph, centrality_dict in C_centralities.items():
+    #             for node, centrality_value in centrality_dict.items():
+    #                 if node not in aggregated_centrality:
+    #                     aggregated_centrality[node] = 1 * centrality_value
+    #                 else:
+    #                     aggregated_centrality[node] += 1 * centrality_value
+
+    #         for node in aggregated_centrality:
+    #             aggregated_centrality[node] /= num_layers
+
+    #         sorted_centrality = sorted(aggregated_centrality.items(), key=lambda x: x[1], reverse=True)
+    #         top_20_values = sorted_centrality[:20]
+
+    #         return top_20_values
+
+    # def weighted_CC(self):
+    #     C_centralities = self.Closeness_centrality()
+    #     aggregated_centrality = {}
+    #     # Compute normalization constant W
+    #     W = sum(self.node_sums.values())
+    #     # Iterate over nodes in each layer and aggregate betweenness centrality
+    #     for layer_graph, centrality_dict in C_centralities.items():
+    #         for node, centrality_value in centrality_dict.items():
+    #             weight = self.node_sums.get(node, 0)
+    #             if node not in aggregated_centrality:
+    #                 aggregated_centrality[node] = weight * centrality_value / W
+    #             else:
+    #                 aggregated_centrality[node] += weight * centrality_value / W
+
+    #     sorted_centrality = sorted(aggregated_centrality.items(), key=lambda x: x[1], reverse=True)
+    #     top_20_values = sorted_centrality[:20]
+    #     return top_20_values
+
+    def closeness_centrality(self, weight = None):
+        try:
+            if weight is not None:
+                for u, v, data in self.edges(data=True):
+                    w = data['weight']
+                    data['dist'] = 1.0 / w  # reciprocal of the original weight
+            ClosenessCentrality = nx.closeness_centrality(self, distance = weight)
+        except Exception as e:
+            print(f"Error calculating closeness centrality : {e}")
+
+        return ClosenessCentrality
+
+    def closeness_centrality_aggregated(self, weight = None):
+        try:
+            ClosenessCentrality = self.closeness_centrality(weight = weight)
+            ClosenessCentrality_aggregated = {}
+            for i in range(len(self.list_of_layers)):
+                for j in range(len(list(self.list_of_layers)[0].nodes)):
+                    if j not in ClosenessCentrality_aggregated:
+                        ClosenessCentrality_aggregated[j] = ClosenessCentrality[
+                            i + (j * len(list(self.list_of_layers)))]
                     else:
-                        aggregated_centrality[node] += 1 * centrality_value
+                        ClosenessCentrality_aggregated[j] += ClosenessCentrality[
+                            i + (j * len(list(self.list_of_layers)))]
+        except Exception as e:
+            print(f"Error calculating aggregated closeness centrality : {e}")
+        return ClosenessCentrality_aggregated
 
-            for node in aggregated_centrality:
-                aggregated_centrality[node] /= num_layers
-
-            sorted_centrality = sorted(aggregated_centrality.items(), key=lambda x: x[1], reverse=True)
-            top_20_values = sorted_centrality[:20]
-
-            return top_20_values
-
-    def weighted_CC(self):
-        C_centralities = self.Closeness_centrality()
-        aggregated_centrality = {}
-        # Compute normalization constant W
-        W = sum(self.node_sums.values())
-        # Iterate over nodes in each layer and aggregate betweenness centrality
-        for layer_graph, centrality_dict in C_centralities.items():
-            for node, centrality_value in centrality_dict.items():
-                weight = self.node_sums.get(node, 0)
-                if node not in aggregated_centrality:
-                    aggregated_centrality[node] = weight * centrality_value / W
-                else:
-                    aggregated_centrality[node] += weight * centrality_value / W
-
-        sorted_centrality = sorted(aggregated_centrality.items(), key=lambda x: x[1], reverse=True)
-        top_20_values = sorted_centrality[:20]
-        return top_20_values
-
-    def betweenness_centrality(self):
-        betweennessCentrality = {}
-        for layer_graph in self.list_of_layers:
-            try:
-                betweennessCentrality[layer_graph] = nx.betweenness_centrality(layer_graph)
-            except Exception as e:
-                print(f"Error calculating betweenness centrality for layer {layer_graph}: {e}")
-        return betweennessCentrality
+    # def betweenness_centrality(self):
+    #     betweennessCentrality = {}
+    #     for layer_graph in self.list_of_layers:
+    #         try:
+    #             betweennessCentrality[layer_graph] = nx.betweenness_centrality(layer_graph)
+    #         except Exception as e:
+    #             print(f"Error calculating betweenness centrality for layer {layer_graph}: {e}")
+    #     return betweennessCentrality
     
         
-    def aggregated_BC(self):
-        B_centralities = self.betweenness_centrality()
-        aggregated_centrality = {}
-        num_layers = len(self.list_of_layers)
+    # def aggregated_BC(self):
+    #     B_centralities = self.betweenness_centrality()
+    #     aggregated_centrality = {}
+    #     num_layers = len(self.list_of_layers)
 
-        for layer_graph, centrality_dict in B_centralities.items():
-            for node, centrality_value in centrality_dict.items():
-                if node not in aggregated_centrality:
-                    aggregated_centrality[node] = centrality_value
-                else:
-                    aggregated_centrality[node] += centrality_value
+    #     for layer_graph, centrality_dict in B_centralities.items():
+    #         for node, centrality_value in centrality_dict.items():
+    #             if node not in aggregated_centrality:
+    #                 aggregated_centrality[node] = centrality_value
+    #             else:
+    #                 aggregated_centrality[node] += centrality_value
 
-        for node in aggregated_centrality:
-            aggregated_centrality[node] /= num_layers
-        sorted_centrality = sorted(aggregated_centrality.items(), key=lambda x: x[1], reverse=True)
-        top_20_values = sorted_centrality[:20]
+    #     for node in aggregated_centrality:
+    #         aggregated_centrality[node] /= num_layers
+    #     sorted_centrality = sorted(aggregated_centrality.items(), key=lambda x: x[1], reverse=True)
+    #     top_20_values = sorted_centrality[:20]
 
-        return top_20_values
+    #     return top_20_values
 
-    def weighted_BC(self):
-        B_centralities = self.betweenness_centrality()
-        aggregated_centrality = {}
-        W = sum(self.node_sums.values())
+    # def weighted_BC(self):
+    #     B_centralities = self.betweenness_centrality()
+    #     aggregated_centrality = {}
+    #     W = sum(self.node_sums.values())
 
-        for layer_graph, centrality_dict in B_centralities.items():
-            for node, centrality_value in centrality_dict.items():
-                weight = self.node_sums.get(node, 0)
-                if node not in aggregated_centrality:
-                    aggregated_centrality[node] = weight * centrality_value / W
-                else:
-                    aggregated_centrality[node] += weight * centrality_value / W
+    #     for layer_graph, centrality_dict in B_centralities.items():
+    #         for node, centrality_value in centrality_dict.items():
+    #             weight = self.node_sums.get(node, 0)
+    #             if node not in aggregated_centrality:
+    #                 aggregated_centrality[node] = weight * centrality_value / W
+    #             else:
+    #                 aggregated_centrality[node] += weight * centrality_value / W
 
-        sorted_centrality = sorted(aggregated_centrality.items(), key=lambda x: x[1], reverse=True)
-        top_20_values = sorted_centrality[:20]
-        return top_20_values
+    #     sorted_centrality = sorted(aggregated_centrality.items(), key=lambda x: x[1], reverse=True)
+    #     top_20_values = sorted_centrality[:20]
+    #     return top_20_values
+
+    def betweenness_centrality(self, weight = None):
+        try:
+            betweennessCentrality = nx.betweenness_centrality(self, weight = weight)
+        except Exception as e:
+            print(f"Error calculating betweenness centrality : {e}")
+        return betweennessCentrality
+
+    def betweenness_centrality_aggregated(self, weight = None):
+        try:
+            betweennessCentrality = self.betweenness_centrality(weight = weight)
+            betweennessCentrality_aggregated = {}
+            for i in range(len(self.list_of_layers)):
+                for j in range(len(list(self.list_of_layers)[0].nodes)):
+                    if j not in betweennessCentrality_aggregated:
+                        if j not in betweennessCentrality_aggregated:
+                            betweennessCentrality_aggregated[j] = ClosenessCentrality[
+                                i + (j * len(list(self.list_of_layers)))]
+                        else:
+                            betweennessCentrality_aggregated[j] += ClosenessCentrality[
+                                i + (j * len(list(self.list_of_layers)))]
+        except Exception as e:
+            print(f"Error calculating aggregated betweenness centrality : {e}")
+
+        return betweennessCentrality_aggregated   
 
     
     # Create adjacency matrix
