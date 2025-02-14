@@ -1,5 +1,6 @@
 # MultiNetPy
 MultiNetPy is a Python package for analyzing multiplex networks. It provides functionalities for importing multiplex network data and computing centrality measures
+
 Installation
 
 Install the dependencies using pip:
